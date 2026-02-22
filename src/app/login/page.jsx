@@ -20,7 +20,7 @@ export default function LoginPage() {
     if (!email || !password) return toast.error("Fill all fields");
     setLoading(true);
     try {
-      const res = await authAPI.login(email, password);
+      const res = await authAPI.login({ email, password });
       if (res.success) {
         setAuth(res.data.user, res.data.token);
         toast.success("Welcome back!");

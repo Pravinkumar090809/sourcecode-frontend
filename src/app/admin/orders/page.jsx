@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { adminAPI } from "@/lib/api";
+import { orderAPI } from "@/lib/api";
 import { ADMIN_API_KEY } from "@/lib/store";
 import {
   HiViewGrid,
@@ -18,8 +18,8 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    adminAPI
-      .getOrders(ADMIN_API_KEY)
+    orderAPI
+      .adminAll(ADMIN_API_KEY)
       .then((res) => setOrders(res.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));

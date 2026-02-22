@@ -31,7 +31,7 @@ function PaymentStatusContent() {
 
     const checkStatus = async () => {
       try {
-        const res = await paymentAPI.verify(orderId, token || "");
+        const res = await paymentAPI.verify(orderId);
         if (res.success) {
           const s = res.data?.status || res.data?.order_status;
           if (s === "completed" || s === "PAID") {

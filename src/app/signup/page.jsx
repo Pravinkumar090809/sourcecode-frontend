@@ -22,7 +22,7 @@ export default function SignupPage() {
     if (password.length < 6) return toast.error("Password must be at least 6 characters");
     setLoading(true);
     try {
-      const res = await authAPI.signup(name, email, password);
+      const res = await authAPI.register({ name, email, password });
       if (res.success) {
         setAuth(res.data.user, res.data.token);
         toast.success("Account created!");

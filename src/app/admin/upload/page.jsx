@@ -42,7 +42,9 @@ export default function AdminUploadPage() {
     if (!file) return toast.error("Select a file");
     setUploading(true);
     try {
-      const res = await adminAPI.uploadFile(file, ADMIN_API_KEY);
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await adminAPI.uploadFile(ADMIN_API_KEY, formData);
       if (res.success) {
         setResult(res.data);
         toast.success("Uploaded!");

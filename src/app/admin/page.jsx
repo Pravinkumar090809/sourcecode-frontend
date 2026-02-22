@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { adminAPI } from "@/lib/api";
+import { adminAPI, orderAPI } from "@/lib/api";
 import { ADMIN_API_KEY } from "@/lib/store";
 import {
   HiCube,
@@ -17,7 +17,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     adminAPI
-      .getStats(ADMIN_API_KEY)
+      .dashboard(ADMIN_API_KEY)
       .then((res) => setStats(res.data || null))
       .catch(() => {})
       .finally(() => setLoading(false));

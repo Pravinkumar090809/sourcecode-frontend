@@ -20,13 +20,13 @@ function DashboardContent() {
   const { user, token } = useAuthStore();
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !user?.email) return;
     orderAPI
-      .getMyOrders(token)
+      .getByEmail(token, user.email)
       .then((res) => setOrders(res.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, user]);
 
   const completed = orders.filter((o) => o.status === "completed");
   const pending = orders.filter((o) => o.status === "pending");

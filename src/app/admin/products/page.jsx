@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { adminAPI } from "@/lib/api";
+import { productAPI } from "@/lib/api";
 import { ADMIN_API_KEY } from "@/lib/store";
 import {
   HiCube,
@@ -29,8 +29,8 @@ export default function AdminProductsPage() {
 
   const fetchProducts = () => {
     setLoading(true);
-    adminAPI
-      .getProducts(ADMIN_API_KEY)
+    productAPI
+      .adminAll(ADMIN_API_KEY)
       .then((res) => setProducts(res.data || []))
       .catch(() => toast.error("Failed to load"))
       .finally(() => setLoading(false));
@@ -75,9 +75,9 @@ export default function AdminProductsPage() {
 
       let res;
       if (editing) {
-        res = await adminAPI.updateProduct(editing.id, body, ADMIN_API_KEY);
+        res = await productAPI.update(ADMIN_API_KEY, editing.id, body);
       } else {
-        res = await adminAPI.createProduct(body, ADMIN_API_KEY);
+        res = await productAPI.create(ADMIN_API_KEY, body);
       }
 
       if (res.success) {
@@ -97,7 +97,7 @@ export default function AdminProductsPage() {
   const handleDelete = async (id) => {
     if (!confirm("Delete this product?")) return;
     try {
-      const res = await adminAPI.deleteProduct(id, ADMIN_API_KEY);
+      const res = await productAPI.delete(ADMIN_API_KEY, id);
       if (res.success) {
         toast.success("Deleted!");
         fetchProducts();

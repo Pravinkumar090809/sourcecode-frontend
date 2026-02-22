@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
     }
     setBuying(true);
     try {
-      const res = await paymentAPI.create(product.id, token);
+      const res = await paymentAPI.create(token, { product_id: product.id, email: user.email });
       if (res.success && res.data?.payment_link) {
         window.location.href = res.data.payment_link;
       } else {
