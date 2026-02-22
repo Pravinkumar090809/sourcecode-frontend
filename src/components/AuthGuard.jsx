@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import Loading from "./Loading";
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export function AuthGuard({ children }) {
   const { user, isLoading } = useAuthStore();
   const router = useRouter();
 
@@ -18,7 +18,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export function AdminGuard({ children }: { children: React.ReactNode }) {
+export function AdminGuard({ children }) {
   const { user, isLoading } = useAuthStore();
   const router = useRouter();
 
