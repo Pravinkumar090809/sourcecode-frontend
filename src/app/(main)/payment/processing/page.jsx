@@ -11,16 +11,26 @@ export default function PaymentProcessingPage() {
 
   useEffect(() => {
     if (!orderId) { router.push("/products"); return; }
+    let active = true;
     const check = async () => {
+      if (!active) return;
       const res = await paymentAPI.verify(orderId);
+      if (!active) return;
       if (res.success) {
-        if (res.payment_status === "paid" || res.status === "PAID") router.push(`/payment/success?order_id=${orderId}`);
-        else if (res.payment_status === "failed") router.push(`/payment/failed?order_id=${orderId}`);
-        else setTimeout(check, 3000);
-      } else setTimeout(check, 3000);
+        const d = res.data || res;
+        if (d.payment_status === "PAID" || d.cashfree_status === "PAID") {
+          router.push(`/payment/success?order_id=${orderId}`);
+        } else if (d.payment_status === "FAILED") {
+          router.push(`/payment/failed?order_id=${orderId}`);
+        } else {
+          setTimeout(check, 3000);
+        }
+      } else {
+        setTimeout(check, 3000);
+      }
     };
     const timer = setTimeout(check, 2000);
-    return () => clearTimeout(timer);
+    return () => { active = false; clearTimeout(timer); };
   }, [orderId, router]);
 
   return (

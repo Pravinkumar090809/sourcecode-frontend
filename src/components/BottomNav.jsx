@@ -18,15 +18,15 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ background: "rgba(10,10,15,0.92)", backdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-      <div className="flex items-center justify-around py-2 px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden" style={{ background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(255,255,255,0.06)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <div className="flex items-center justify-around py-2 overflow-hidden">
         {links.map((l) => {
           const active = pathname === l.href || (l.href !== "/" && pathname.startsWith(l.href));
           return (
-            <Link key={l.label} href={l.href} className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200" style={active ? { color: "#ef4444" } : { color: "#64748b" }}>
-              <l.icon className="text-xl" />
-              <span className="text-[10px] font-medium">{l.label}</span>
-              {active && <div className="w-1 h-1 rounded-full mt-0.5" style={{ background: "#ef4444" }} />}
+            <Link key={l.label} href={l.href} className="flex flex-col items-center gap-0.5 py-1.5 min-w-0 flex-1 rounded-xl transition-all duration-200" style={active ? { color: "#ef4444" } : { color: "#64748b" }}>
+              <l.icon className="text-lg" />
+              <span className="text-[10px] font-medium leading-tight">{l.label}</span>
+              {active && <div className="w-1 h-1 rounded-full" style={{ background: "#ef4444" }} />}
             </Link>
           );
         })}

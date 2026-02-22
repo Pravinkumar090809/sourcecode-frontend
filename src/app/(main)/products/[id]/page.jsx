@@ -27,12 +27,17 @@ export default function ProductDetailPage() {
   const handleBuy = async () => {
     if (!token) { router.push("/login"); return; }
     setBuying(true);
-    const res = await paymentAPI.create(token, { product_id: id, email: user.email });
+    const res = await paymentAPI.create(token, { product_id: id, buyer_email: user.email, buyer_name: user.name || "Customer" });
     setBuying(false);
-    if (res.success && res.payment_link) {
-      window.location.href = res.payment_link;
-    } else if (res.success && res.order_id) {
-      router.push(`/payment/processing?order_id=${res.order_id}`);
+    if (res.success) {
+      const d = res.data || res;
+      if (d.payment_session_id) {
+        window.location.href = `https://sandbox.cashfree.com/pg/orders/sessions/${d.payment_session_id}`;
+      } else if (d.payment_link) {
+        window.location.href = d.payment_link;
+      } else {
+        router.push(`/payment/processing?order_id=${d.cashfree_order_id || d.order_id}`);
+      }
     } else {
       toast.error(res.message || "Payment failed");
     }
