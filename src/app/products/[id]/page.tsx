@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="px-4 py-16 text-center relative z-10">
+      <div className="py-16 text-center relative z-10">
         <div className="glass-strong max-w-md mx-auto p-10 animate-fade-in-scale">
           <div className="icon-box icon-box-orange mx-auto mb-5 w-16 h-16">
             <HiCode className="text-orange-500 text-2xl" />
@@ -80,7 +80,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="px-4 py-6 relative z-10">
+    <div className="py-6 relative z-10">
       <div className="max-w-5xl mx-auto">
         <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-700 mb-6 transition-colors font-medium">
           <HiArrowLeft /> Back

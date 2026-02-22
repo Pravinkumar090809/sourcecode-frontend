@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,7 +8,14 @@ import { AuthGuard } from "@/components/AuthGuard";
 import Loading from "@/components/Loading";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { HiShoppingBag, HiClock, HiCheckCircle, HiXCircle, HiDownload, HiArrowRight } from "react-icons/hi";
+import { 
+  HiShoppingBag, 
+  HiClock, 
+  HiCheckCircle, 
+  HiXCircle, 
+  HiDownload, 
+  HiArrowRight 
+} from "react-icons/hi";
 
 interface Order {
   id: string;
@@ -36,105 +44,190 @@ function DashboardContent() {
   const paidOrders = orders.filter((o) => o.payment_status === "PAID");
   const pendingOrders = orders.filter((o) => o.payment_status === "PENDING");
 
+  const handleDownload = async (orderId: string) => {
+    try {
+      const res = await orderAPI.download(token!, orderId, user!.email);
+      if (res.success && res.data?.download_url) {
+        window.open(res.data.download_url, "_blank");
+        toast.success("Download started!");
+      } else {
+        toast.error(res.message || "Download failed");
+      }
+    } catch {
+      toast.error("Download failed");
+    }
+  };
+
   return (
-    <div className="px-4 py-6 relative z-10">
-      <div className="max-w-4xl mx-auto">
-        {/* Welcome */}
-        <div className="glass-strong p-6 sm:p-8 mb-6 animate-fade-in-up relative overflow-hidden">
+    <div className="max-w-4xl mx-auto relative z-10">
+
+      {/* Welcome Card */}
+      <div className="glass-strong p-5 sm:p-6 mb-6 animate-fade-in-up relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-yellow-400 to-pink-500" />
+          
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-yellow-400 flex items-center justify-center text-white text-xl font-extrabold shadow-xl shadow-orange-500/20">
-              {user?.name.charAt(0).toUpperCase()}
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 to-yellow-400 flex items-center justify-center text-white text-lg sm:text-xl font-extrabold shadow-lg shadow-orange-500/20 flex-shrink-0">
+              {user?.name?.charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-slate-800">Welcome, {user?.name?.split(" ")[0]}! 👋</h1>
-              <p className="text-sm text-slate-400">{user?.email}</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-extrabold text-slate-800 truncate">
+                Welcome, {user?.name?.split(" ")[0]}! 👋
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 truncate">{user?.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { icon: HiShoppingBag, value: orders.length, label: "Total Orders", color: "text-orange-500", bg: "icon-box-orange" },
-            { icon: HiCheckCircle, value: paidOrders.length, label: "Purchased", color: "text-emerald-500", bg: "icon-box-green" },
-            { icon: HiClock, value: pendingOrders.length, label: "Pending", color: "text-amber-500", bg: "icon-box-orange" },
-          ].map((s, i) => (
-            <div key={i} className="stat-card text-center animate-fade-in-up" style={{ animationDelay: `${0.08 * i}s` }}>
-              <div className={`icon-box ${s.bg} mx-auto mb-2 w-10 h-10`}>
-                <s.icon className={`${s.color} text-lg`} />
+            { 
+              icon: HiShoppingBag, 
+              value: orders.length, 
+              label: "Total", 
+              color: "text-orange-500", 
+              bg: "icon-box-orange" 
+            },
+            { 
+              icon: HiCheckCircle, 
+              value: paidOrders.length, 
+              label: "Purchased", 
+              color: "text-emerald-500", 
+              bg: "icon-box-green" 
+            },
+            { 
+              icon: HiClock, 
+              value: pendingOrders.length, 
+              label: "Pending", 
+              color: "text-amber-500", 
+              bg: "icon-box-orange" 
+            },
+          ].map((stat, i) => (
+            <div 
+              key={i} 
+              className="stat-card text-center animate-fade-in-up"
+              style={{ animationDelay: `${0.08 * i}s` }}
+            >
+              <div className={`icon-box ${stat.bg} mx-auto mb-2 w-10 h-10`}>
+                <stat.icon className={`${stat.color} text-lg`} />
               </div>
-              <p className="text-2xl font-extrabold text-slate-800">{s.value}</p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">{s.label}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-800">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs text-slate-400 font-medium">{stat.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Orders */}
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-extrabold text-slate-800">Your <span className="gradient-text">Orders</span></h2>
-          <Link href="/products" className="text-sm text-orange-500 flex items-center gap-1 hover:text-orange-600 font-semibold">
+        {/* Orders Section */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base sm:text-lg font-extrabold text-slate-800">
+            Your <span className="gradient-text">Orders</span>
+          </h2>
+          <Link 
+            href="/products" 
+            className="text-xs sm:text-sm text-orange-500 flex items-center gap-1 hover:text-orange-600 font-semibold"
+          >
             Shop More <HiArrowRight />
           </Link>
         </div>
 
-        {loading ? <Loading /> : orders.length === 0 ? (
-          <div className="glass p-10 text-center animate-fade-in-scale">
-            <div className="icon-box icon-box-orange mx-auto mb-4 w-16 h-16">
-              <HiShoppingBag className="text-orange-500 text-2xl" />
+        {/* Orders List */}
+        {loading ? (
+          <div className="flex-center py-12">
+            <Loading />
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="glass p-8 sm:p-10 text-center animate-fade-in-scale">
+            <div className="icon-box icon-box-orange mx-auto mb-4 w-14 h-14 sm:w-16 sm:h-16">
+              <HiShoppingBag className="text-orange-500 text-xl sm:text-2xl" />
             </div>
             <p className="text-slate-500 font-medium mb-1">No orders yet</p>
             <p className="text-xs text-slate-400 mb-5">Start shopping for premium source code</p>
-            <Link href="/products" className="btn-primary text-sm">Browse Products</Link>
+            <Link href="/products" className="btn-primary">
+              Browse Products
+            </Link>
           </div>
         ) : (
           <div className="space-y-3">
             {orders.map((order, i) => (
-              <div key={order.id} className="glass p-4 sm:p-5 flex items-center justify-between animate-fade-in-up" style={{ animationDelay: `${0.05 * i}s` }}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${
-                    order.payment_status === "PAID" ? "bg-emerald-50 border border-emerald-100" : order.payment_status === "PENDING" ? "bg-amber-50 border border-amber-100" : "bg-red-50 border border-red-100"
-                  }`}>
-                    {order.payment_status === "PAID" ? <HiCheckCircle className="text-emerald-500 text-lg" /> :
-                     order.payment_status === "PENDING" ? <HiClock className="text-amber-500 text-lg" /> :
-                     <HiXCircle className="text-red-500 text-lg" />}
+              <div 
+                key={order.id} 
+                className="glass p-4 animate-fade-in-up"
+                style={{ animationDelay: `${0.05 * i}s` }}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  {/* Left: Status & Title */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      order.payment_status === "PAID" 
+                        ? "bg-emerald-50 border border-emerald-100" 
+                        : order.payment_status === "PENDING" 
+                        ? "bg-amber-50 border border-amber-100" 
+                        : "bg-red-50 border border-red-100"
+                    }`}>
+                      {order.payment_status === "PAID" ? (
+                        <HiCheckCircle className="text-emerald-500 text-lg" />
+                      ) : order.payment_status === "PENDING" ? (
+                        <HiClock className="text-amber-500 text-lg" />
+                      ) : (
+                        <HiXCircle className="text-red-500 text-lg" />
+                      )}
+                    </div>
+                    
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-700 truncate">
+                        {order.products?.title || "Product"}
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        {new Date(order.created_at).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric"
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-700 truncate">{order.products?.title || "Product"}</p>
-                    <p className="text-[11px] text-slate-400">{new Date(order.created_at).toLocaleDateString("en-IN")}</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right">
-                    <span className={`badge text-[10px] ${order.payment_status === "PAID" ? "badge-success" : order.payment_status === "PENDING" ? "badge-pending" : "badge-error"}`}>
-                      {order.payment_status}
-                    </span>
-                    <p className="text-sm font-extrabold gradient-text mt-1">₹{order.products?.price || 0}</p>
+                  {/* Right: Price & Download */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="text-right">
+                      <span className={`badge ${
+                        order.payment_status === "PAID" 
+                          ? "badge-success" 
+                          : order.payment_status === "PENDING" 
+                          ? "badge-pending" 
+                          : "badge-error"
+                      }`}>
+                        {order.payment_status}
+                      </span>
+                      <p className="text-sm font-extrabold gradient-text mt-1">
+                        ₹{order.products?.price || 0}
+                      </p>
+                    </div>
+                    
+                    {order.payment_status === "PAID" && (
+                      <button
+                        onClick={() => handleDownload(order.id)}
+                        className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 hover:bg-emerald-100 transition-colors"
+                        title="Download"
+                      >
+                        <HiDownload className="text-lg" />
+                      </button>
+                    )}
                   </div>
-                  {order.payment_status === "PAID" && (
-                    <button
-                      onClick={async () => {
-                        const res = await orderAPI.download(token!, order.id, user!.email);
-                        if (res.success) window.open(res.data.download_url, "_blank");
-                        else toast.error(res.message || "Download failed");
-                      }}
-                      className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 hover:bg-emerald-100 transition-colors"
-                      title="Download"
-                    >
-                      <HiDownload />
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+
     </div>
   );
 }
 
 export default function DashboardPage() {
-  return <AuthGuard><DashboardContent /></AuthGuard>;
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
+  );
 }

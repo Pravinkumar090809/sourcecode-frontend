@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 relative z-10">
+    <div className="min-h-[70vh] flex items-center justify-center relative z-10">
       <div className="w-full max-w-md animate-fade-in-up">
         <div className="glass-strong p-8 sm:p-10">
           {/* Header */}

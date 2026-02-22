@@ -42,7 +42,7 @@ function PaymentStatusContent() {
   const c = config[status] || config.error;
 
   return (
-    <div className="px-4 py-16 relative z-10 min-h-[75vh] flex items-center">
+    <div className="py-16 relative z-10 min-h-[75vh] flex items-center">
       <div className="max-w-md mx-auto w-full glass-strong p-10 text-center animate-fade-in-scale">
         <div className={`w-20 h-20 rounded-full ${c.bg} border flex items-center justify-center mx-auto mb-6`}>
           <c.icon className={`text-4xl ${c.color}`} />

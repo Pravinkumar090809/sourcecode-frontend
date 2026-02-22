@@ -50,7 +50,7 @@ export default function ProductsPage() {
   }, [search, products, sort]);
 
   return (
-    <div className="px-4 py-6 relative z-10">
+    <div className="py-6 relative z-10">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 animate-fade-in-up">

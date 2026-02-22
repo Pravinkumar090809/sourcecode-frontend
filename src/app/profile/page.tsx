@@ -16,7 +16,7 @@ function ProfileContent() {
   };
 
   return (
-    <div className="px-4 py-6 relative z-10">
+    <div className="py-6 relative z-10">
       <div className="max-w-lg mx-auto">
         <h1 className="text-2xl font-extrabold mb-6 text-slate-800">My <span className="gradient-text">Profile</span></h1>
 
@@ -54,7 +54,7 @@ function ProfileContent() {
 
         {/* Actions */}
         <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-          <Link href="/dashboard" className="glass p-4 flex items-center justify-between group hover:-translate-y-1 transition-all cursor-pointer block">
+          <Link href="/dashboard" className="glass p-4 flex items-center justify-between group hover:-translate-y-1 transition-all cursor-pointer">
             <div className="flex items-center gap-3">
               <div className="icon-box icon-box-blue w-10 h-10">
                 <HiArrowRight className="text-blue-500" />
