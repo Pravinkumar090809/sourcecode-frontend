@@ -1,35 +1,22 @@
 "use client";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/store";
 import Loading from "./Loading";
 
 export function AuthGuard({ children }) {
-  const { user, isLoading } = useAuthStore();
+  const { user, token, isLoading } = useAuthStore();
   const router = useRouter();
-
   useEffect(() => {
-    if (!isLoading && !user) router.push("/login");
-  }, [user, isLoading, router]);
-
+    if (!isLoading && !token) router.replace("/login");
+  }, [isLoading, token, router]);
   if (isLoading) return <Loading />;
-  if (!user) return null;
-  return <>{children}</>;
+  if (!token) return null;
+  return children;
 }
 
 export function AdminGuard({ children }) {
-  const { user, isLoading } = useAuthStore();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user) router.push("/login");
-      else if (user.role !== "admin") router.push("/");
-    }
-  }, [user, isLoading, router]);
-
+  const { isLoading } = useAuthStore();
   if (isLoading) return <Loading />;
-  if (!user || user.role !== "admin") return null;
-  return <>{children}</>;
+  return children;
 }

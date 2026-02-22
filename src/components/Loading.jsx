@@ -1,12 +1,18 @@
 "use client";
-
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center py-8">
-      <div className="relative w-10 h-10">
-        <div className="absolute inset-0 rounded-full" style={{ border: "3px solid #fed7aa" }} />
-        <div className="absolute inset-0 rounded-full animate-spin" style={{ border: "3px solid #f97316", borderTopColor: "transparent" }} />
-      </div>
+    <div style={{
+      position: "fixed", inset: 0, background: "#0a0a0f",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      zIndex: 9999, flexDirection: "column", gap: "1.5rem"
+    }}>
+      <div style={{
+        width: 48, height: 48, border: "3px solid rgba(239,68,68,0.2)",
+        borderTop: "3px solid #ef4444", borderRadius: "50%",
+        animation: "spin 0.8s linear infinite"
+      }} />
+      <p style={{ color: "#94a3b8", fontSize: 14, letterSpacing: 2 }}>LOADING...</p>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

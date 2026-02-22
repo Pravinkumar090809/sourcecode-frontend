@@ -1,10 +1,7 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://sourcecode-backend-rxvt.onrender.com";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://sourcecode-backend-rxvt.onrender.com";
 
 export async function api(endpoint, options = {}) {
   const { method = "GET", body, token, adminKey, isFormData } = options;
-
   const headers = {};
   if (!isFormData) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -22,7 +19,6 @@ export async function api(endpoint, options = {}) {
   }
 }
 
-// Auth APIs
 export const authAPI = {
   register: (body) => api("/api/auth/register", { method: "POST", body }),
   login: (body) => api("/api/auth/login", { method: "POST", body }),
@@ -30,7 +26,6 @@ export const authAPI = {
   updateProfile: (token, body) => api("/api/auth/profile", { method: "PUT", body, token }),
 };
 
-// Product APIs
 export const productAPI = {
   getAll: () => api("/api/products"),
   getById: (id) => api(`/api/products/${id}`),
@@ -41,7 +36,6 @@ export const productAPI = {
   adminAll: (adminKey) => api("/api/products/admin/all", { adminKey }),
 };
 
-// Order APIs
 export const orderAPI = {
   create: (token, body) => api("/api/orders", { method: "POST", body, token }),
   getById: (id) => api(`/api/orders/${id}`),
@@ -51,13 +45,11 @@ export const orderAPI = {
   adminStats: (adminKey) => api("/api/orders/admin/stats", { adminKey }),
 };
 
-// Payment APIs
 export const paymentAPI = {
   create: (token, body) => api("/api/payments/create", { method: "POST", body, token }),
   verify: (cashfreeOrderId) => api(`/api/payments/verify/${cashfreeOrderId}`),
 };
 
-// Admin APIs
 export const adminAPI = {
   dashboard: (adminKey) => api("/api/admin/dashboard", { adminKey }),
   uploadFile: (adminKey, formData) => api("/api/admin/upload", { method: "POST", body: formData, adminKey, isFormData: true }),

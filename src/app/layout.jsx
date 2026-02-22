@@ -1,29 +1,20 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: "#fff7ed",
-};
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata = {
-  title: "Source Code Web - Premium Source Codes",
-  description: "Buy premium, production-ready source codes for your projects. Web apps, mobile apps, APIs and more.",
+  title: "SourceCode - Premium Source Code Marketplace",
+  description: "Buy and download premium source code projects. Build amazing apps with ready-to-use source code.",
+  keywords: "source code, buy code, download code, web development, app development",
 };
 
-import ClientLayout from "./ClientLayout";
+export const viewport = { width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ClientLayout>{children}</ClientLayout>
-      </body>
+    <html lang="en" className={geist.variable}>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

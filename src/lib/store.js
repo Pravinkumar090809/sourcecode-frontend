@@ -2,7 +2,9 @@ import { create } from "zustand";
 import Cookies from "js-cookie";
 import { authAPI } from "./api";
 
-export const useAuthStore = create((set) => ({
+export const ADMIN_API_KEY = "sk_admin_pravinkumar_2026_secretkey";
+
+export const useAuthStore = create((set, get) => ({
   user: null,
   token: null,
   isLoading: true,
@@ -19,34 +21,27 @@ export const useAuthStore = create((set) => ({
     set({ user: null, token: null, isLoading: false });
   },
 
-  loadFromCookies: () => {
+  loadFromCookies: async () => {
     const token = Cookies.get("token");
     const userStr = Cookies.get("user");
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        set({ user, token, isLoading: false });
-        // Validate token in background
-        authAPI.getProfile(token).then((res) => {
-          if (res.success && res.data) {
-            set({ user: res.data, token, isLoading: false });
-            Cookies.set("user", JSON.stringify(res.data), { expires: 7 });
-          } else {
-            console.warn("Session expired — please log in again");
-            Cookies.remove("token");
-            Cookies.remove("user");
-            set({ user: null, token: null, isLoading: false });
-          }
-        });
-      } catch {
+    if (!token || !userStr) {
+      set({ isLoading: false });
+      return;
+    }
+    try {
+      const user = JSON.parse(userStr);
+      set({ user, token, isLoading: false });
+      const res = await authAPI.getProfile(token);
+      if (res.success) {
+        set({ user: res.user || res.data });
+        Cookies.set("user", JSON.stringify(res.user || res.data), { expires: 7 });
+      } else {
         Cookies.remove("token");
         Cookies.remove("user");
-        set({ isLoading: false });
+        set({ user: null, token: null });
       }
-    } else {
+    } catch {
       set({ isLoading: false });
     }
   },
 }));
-
-export const ADMIN_API_KEY = "sk_admin_pravinkumar_2026_secretkey";
