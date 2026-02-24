@@ -5,6 +5,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { productAPI, paymentAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
+import { load } from "@cashfreepayments/cashfree-js";
 import Footer from "@/components/Footer";
 import { HiOutlineShoppingCart, HiOutlineStar, HiOutlineTag, HiOutlineArrowLeft, HiOutlineShieldCheck, HiOutlineArrowDownTray, HiOutlineBolt, HiOutlineCheckCircle, HiOutlineClock } from "react-icons/hi2";
 import { FiPackage, FiCode, FiLayers, FiDownload } from "react-icons/fi";
@@ -16,6 +17,38 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponLoading, setCouponLoading] = useState(false);
+
+  const applyCoupon = async () => {
+    if (!coupon.trim() || !product) return;
+    setCouponLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/admin/coupons/validate?code=${encodeURIComponent(coupon.trim())}`);
+      const data = await res.json();
+      if (data.success) {
+        let disc = 0;
+        if (data.data.type === "percent") {
+          disc = Math.round((product.price * (data.data.discount || 0)) / 100);
+        } else {
+          disc = data.data.discount || 0;
+        }
+        if (disc > (product.price || 0)) disc = product.price || 0;
+        setDiscount(disc);
+        toast.success("Coupon applied!");
+      } else {
+        setDiscount(0);
+        toast.error(data.message || "Invalid coupon");
+      }
+    } catch (err) {
+      console.error("Coupon check error", err);
+      toast.error("Failed to validate coupon");
+      setDiscount(0);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   useEffect(() => {
     productAPI.getById(id).then((res) => {
@@ -24,22 +57,39 @@ export default function ProductDetailPage() {
     });
   }, [id]);
 
+  // warn if description missing; called every render but only logs when product available
+  useEffect(() => {
+    if (product && !product.description) {
+      console.warn(`Product ${product.id} \"${product.title}\" has no description. Add detailed copy in admin.`);
+    }
+  }, [product]);
+
   const handleBuy = async () => {
     if (!token) { router.push("/login"); return; }
     setBuying(true);
-    const res = await paymentAPI.create(token, { product_id: id, buyer_email: user.email, buyer_name: user.name || "Customer" });
-    setBuying(false);
-    if (res.success) {
-      const d = res.data || res;
-      if (d.payment_session_id) {
-        window.location.href = `https://sandbox.cashfree.com/pg/orders/sessions/${d.payment_session_id}`;
-      } else if (d.payment_link) {
-        window.location.href = d.payment_link;
+    try {
+      const res = await paymentAPI.create(token, { product_id: id, buyer_email: user.email, buyer_name: user.name || "Customer", coupon_code: coupon.trim() || undefined });
+      if (res.success) {
+        const d = res.data || res;
+        if (d.payment_session_id) {
+          const cashfree = await load({ mode: "sandbox" });
+          await cashfree.checkout({
+            paymentSessionId: d.payment_session_id,
+            redirectTarget: "_self",
+          });
+        } else if (d.payment_link) {
+          window.location.href = d.payment_link;
+        } else {
+          router.push(`/payment/processing?order_id=${d.cashfree_order_id || d.order_id}`);
+        }
       } else {
-        router.push(`/payment/processing?order_id=${d.cashfree_order_id || d.order_id}`);
+        toast.error(res.message || "Payment failed");
       }
-    } else {
-      toast.error(res.message || "Payment failed");
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error("Payment initialization failed. Please try again.");
+    } finally {
+      setBuying(false);
     }
   };
 
@@ -89,7 +139,23 @@ export default function ProductDetailPage() {
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <FiCode className="text-red-400" /> Description
               </h2>
-              <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{product.description || "Premium source code package with complete documentation."}</p>
+              {/* render multi-line description as separate paragraphs and keep left-aligned */}
+              {product.description ? (
+                product.description
+                  .split(/\r?\n+/)
+                  .map((line, idx) => (
+                    <p
+                      key={idx}
+                      className="text-slate-400 text-sm leading-relaxed text-left"
+                    >
+                      {line || "\u00A0"}
+                    </p>
+                  ))
+              ) : (
+                <p className="text-slate-400 text-sm leading-relaxed text-left">
+                  <span className="italic text-red-300">Description missing – please update product details.</span>
+                </p>
+              )}
             </div>
 
             <div className="glass rounded-2xl p-6">
@@ -119,10 +185,31 @@ export default function ProductDetailPage() {
                   ))}
                 </div>
               )}
-              <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-3xl font-bold" style={{ color: "#ef4444" }}>₹{product.price || 0}</span>
-                <span className="text-sm text-slate-600 line-through">₹{((product.price || 0) * 2)}</span>
-                <span className="px-2 py-0.5 rounded text-xs font-medium text-green-400" style={{ background: "rgba(34,197,94,0.1)" }}>50% OFF</span>
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Coupon code"
+                    className="input-glass flex-1"
+                    value={coupon}
+                    onChange={(e) => setCoupon(e.target.value)}
+                  />
+                  <button
+                    onClick={applyCoupon}
+                    disabled={couponLoading || !coupon.trim()}
+                    className="btn-secondary px-3 py-1 text-xs"
+                  >
+                    {couponLoading ? "..." : "Apply"}
+                  </button>
+                </div>
+                {discount > 0 && (
+                  <div className="text-green-400 text-sm">Discount: -₹{discount}</div>
+                )}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold" style={{ color: "#ef4444" }}>₹{(product.price || 0) - discount}</span>
+                  <span className="text-sm text-slate-600 line-through">₹{((product.price || 0) * 2)}</span>
+                  <span className="px-2 py-0.5 rounded text-xs font-medium text-green-400" style={{ background: "rgba(34,197,94,0.1)" }}>50% OFF</span>
+                </div>
               </div>
 
               <button onClick={handleBuy} disabled={buying} className="btn-primary w-full py-3.5 rounded-xl text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2 mb-3">
