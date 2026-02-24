@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { HiOutlineCodeBracket } from "react-icons/hi2";
-import { FiGithub, FiTwitter, FiMail, FiHeart } from "react-icons/fi";
+import { FiGithub, FiTwitter, FiMail, FiInstagram, FiYoutube, FiFacebook, FiLinkedin, FiHeart } from "react-icons/fi";
 
 export default function Footer() {
   const links = {
@@ -20,6 +20,7 @@ export default function Footer() {
       { href: "/terms", label: "Terms of Service" },
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/refund-policy", label: "Refund Policy" },
+      { href: "/shipping", label: "Shipping & Delivery" },
     ],
   };
 
@@ -36,9 +37,24 @@ export default function Footer() {
             </Link>
             <p className="text-sm text-slate-500 mb-4 leading-relaxed">Premium source code marketplace. Buy, download, and build amazing projects.</p>
             <div className="flex gap-3">
-              {[FiGithub, FiTwitter, FiMail].map((Icon, i) => (
-                <a key={i} href="#" className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 transition-all" style={{ background: "rgba(255,255,255,0.05)" }}>
-                  <Icon className="text-base" />
+              {[
+                { Icon: FiGithub, href: "https://github.com/Pravinkumar0908/" },
+                { Icon: FiTwitter, href: "#" },
+                { Icon: FiMail, href: "mailto:hello@example.com" },
+                { Icon: FiInstagram, href: "https://www.instagram.com/pravinkumar_90/" },
+                { Icon: FiYoutube, href: "https://www.youtube.com/@codewithturn" },
+                { Icon: FiFacebook, href: "#" },
+                { Icon: FiLinkedin, href: "https://www.linkedin.com/in/pravin-kumar-verma-9084b3213/" },
+              ].map((item, i) => (
+                <a
+                  key={i}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 transition-all"
+                  style={{ background: "rgba(255,255,255,0.05)" }}
+                >
+                  <item.Icon className="text-base" />
                 </a>
               ))}
             </div>
