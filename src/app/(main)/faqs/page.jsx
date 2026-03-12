@@ -14,10 +14,25 @@ const faqs = [
   { q: "Do you offer custom development?", a: "Yes! Contact us through the contact page for custom development requests. We'll get back to you within 24 hours." },
 ];
 
+// JSON-LD structured data for FAQPage (helps Google indexing)
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function FAQsPage() {
   const [open, setOpen] = useState(null);
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-3xl mx-auto px-4 py-12">
         <div className="text-center mb-12 animate-fadeIn">
           <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: "rgba(239,68,68,0.1)" }}>

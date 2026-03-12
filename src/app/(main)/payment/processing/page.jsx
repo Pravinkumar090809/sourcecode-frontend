@@ -18,7 +18,7 @@ export default function PaymentProcessingPage() {
       if (!active) return;
       if (res.success) {
         const d = res.data || res;
-        if (d.payment_status === "PAID" || d.cashfree_status === "PAID") {
+        if ((d.payment_status||"").toLowerCase() === "paid" || (d.cashfree_status||"").toLowerCase() === "paid") {
           router.push(`/payment/success?order_id=${orderId}`);
         } else if (d.payment_status === "FAILED") {
           router.push(`/payment/failed?order_id=${orderId}`);

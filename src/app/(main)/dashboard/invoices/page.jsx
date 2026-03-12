@@ -13,12 +13,13 @@ function InvoicesContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token && user?.email) {
-      orderAPI.getByEmail(token, user.email).then((res) => {
-        if (res.success) setOrders((res.orders || res.data || []).filter((o) => o.payment_status === "paid"));
+    const userEmail = user?.email || user?.buyer_email;
+    if (token && userEmail) {
+      orderAPI.getByEmail(token, userEmail).then((res) => {
+        if (res.success) setOrders((res.orders || res.data || []).filter((o) => (o.payment_status||"").toLowerCase() === "paid"));
         setLoading(false);
       });
-    }
+    } else setLoading(false);
   }, [token, user]);
 
   return (

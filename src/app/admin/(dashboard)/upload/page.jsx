@@ -27,18 +27,18 @@ export default function AdminUploadPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8 animate-fadeIn">
-        <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-          <HiOutlineCloudArrowUp className="text-red-400" /> Upload Files
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="mb-6 sm:mb-8 animate-fadeIn">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 flex items-center gap-2">
+          <HiOutlineCloudArrowUp className="text-red-400 flex-shrink-0" /> Upload Files
         </h1>
-        <p className="text-slate-500 text-sm">Upload source code files to storage</p>
+        <p className="text-slate-500 text-xs sm:text-sm">Upload source code files to storage</p>
       </div>
 
-      <div className="glass rounded-2xl p-6 animate-fadeIn">
-        <div className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center hover:border-red-500/30 transition-colors cursor-pointer" onClick={() => fileRef.current?.click()}>
+      <div className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-fadeIn">
+        <div className="border-2 border-dashed border-white/10 rounded-xl p-6 sm:p-8 text-center hover:border-red-500/30 transition-colors cursor-pointer" onClick={() => fileRef.current?.click()}>
           <input ref={fileRef} type="file" className="hidden" onChange={(e) => setFile(e.target.files[0])} accept=".zip,.rar,.7z,.tar.gz,.pdf,.txt" />
-          <HiOutlineCloudArrowUp className="text-4xl text-slate-500 mx-auto mb-3" />
+          <HiOutlineCloudArrowUp className="text-3xl sm:text-4xl text-slate-500 mx-auto mb-3" />
           {file ? (
             <div>
               <p className="text-sm text-white font-medium flex items-center justify-center gap-2"><HiOutlineDocumentText className="text-red-400" />{file.name}</p>
@@ -59,14 +59,14 @@ export default function AdminUploadPage() {
         )}
 
         {uploadedUrl && (
-          <div className="mt-4 p-4 rounded-xl animate-fadeIn" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+          <div className="mt-4 p-3 sm:p-4 rounded-xl animate-fadeIn" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
             <div className="flex items-center gap-2 mb-2">
-              <HiOutlineCheckCircle className="text-green-400" />
+              <HiOutlineCheckCircle className="text-green-400 flex-shrink-0" />
               <p className="text-sm font-medium text-green-400">Upload Successful!</p>
             </div>
             <div className="flex items-center gap-2">
-              <input readOnly value={uploadedUrl} className="input-glass flex-1 text-xs" />
-              <button onClick={() => { navigator.clipboard.writeText(uploadedUrl); toast.success("Copied!"); }} className="btn-secondary px-3 py-2 rounded-lg text-xs">Copy</button>
+              <input readOnly value={uploadedUrl} className="input-glass flex-1 text-xs min-w-0" />
+              <button onClick={() => { navigator.clipboard.writeText(uploadedUrl); toast.success("Copied!"); }} className="btn-secondary px-3 py-2 rounded-lg text-xs flex-shrink-0">Copy</button>
             </div>
           </div>
         )}

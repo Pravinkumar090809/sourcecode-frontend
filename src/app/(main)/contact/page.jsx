@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { supportAPI } from "@/lib/api";
 import Footer from "@/components/Footer";
 import { HiOutlineEnvelope, HiOutlineMapPin, HiOutlineClock, HiOutlinePaperAirplane, HiOutlineUser, HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 
@@ -12,14 +13,28 @@ export default function ContactPage() {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) return toast.error("Please fill required fields");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    toast.success("Message sent successfully! We'll get back to you soon.");
-    setForm({ name: "", email: "", subject: "", message: "" });
+    try {
+      const res = await supportAPI.contact({
+        name: form.name,
+        email: form.email,
+        subject: form.subject || "Contact Form Message",
+        message: form.message,
+      });
+      if (res.success) {
+        toast.success(res.message || "Message sent successfully! We'll get back to you soon.");
+        setForm({ name: "", email: "", subject: "", message: "" });
+      } else {
+        toast.error(res.message || "Failed to send message. Please try again.");
+      }
+    } catch {
+      toast.error("Network error. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const info = [
-    { icon: HiOutlineEnvelope, title: "Email", value: "support@sourcecode.com", color: "#ef4444" },
+    { icon: HiOutlineEnvelope, title: "Email", value: "edubee@proton.me", color: "#ef4444" },
     { icon: HiOutlineMapPin, title: "Location", value: "India", color: "#22c55e" },
     { icon: HiOutlineClock, title: "Response Time", value: "Within 24 hours", color: "#f59e0b" },
   ];

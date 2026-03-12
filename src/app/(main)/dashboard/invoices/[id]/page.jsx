@@ -4,12 +4,15 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { orderAPI } from "@/lib/api";
 import { AuthGuard } from "@/components/AuthGuard";
-import { HiOutlineArrowLeft, HiOutlineCheckCircle } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineCheckCircle, HiOutlineArrowDownTray } from "react-icons/hi2";
 
 function InvoiceDetailContent() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // fallback property name used by backend
+  const emailValue = order?.buyer_email || order?.email || "";
 
   useEffect(() => {
     orderAPI.getById(id).then((res) => {
@@ -36,11 +39,20 @@ function InvoiceDetailContent() {
             <HiOutlineCheckCircle /> Paid
           </span>
         </div>
+        {/* print/download control */}
+        <div className="mb-4">
+          <button
+            onClick={() => window.print()}
+            className="btn-secondary px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2"
+          >
+            <HiOutlineArrowDownTray /> Download / Print
+          </button>
+        </div>
         <div className="space-y-4 mb-6">
           <div className="flex justify-between text-sm"><span className="text-slate-500">Product</span><span className="text-white">{order.product_title || "Source Code"}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-500">Date</span><span className="text-white">{new Date(order.created_at).toLocaleDateString()}</span></div>
           <div className="flex justify-between text-sm"><span className="text-slate-500">Order ID</span><span className="text-white font-mono text-xs">{order.id}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-slate-500">Email</span><span className="text-white">{order.email}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-slate-500">Email</span><span className="text-white">{emailValue}</span></div>
         </div>
         <div className="border-t border-white/5 pt-4">
           <div className="flex justify-between text-lg font-bold"><span className="text-white">Total</span><span style={{ color: "#ef4444" }}>₹{order.amount || order.price || 0}</span></div>

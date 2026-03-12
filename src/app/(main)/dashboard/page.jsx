@@ -13,8 +13,9 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token && user?.email) {
-      orderAPI.getByEmail(token, user.email).then((res) => {
+    const userEmail = user?.email || user?.buyer_email;
+    if (token && userEmail) {
+      orderAPI.getByEmail(token, userEmail).then((res) => {
         if (res.success) setOrders(res.orders || res.data || []);
         setLoading(false);
       });
@@ -23,9 +24,9 @@ function DashboardContent() {
 
   const stats = [
     { icon: HiOutlineShoppingBag, label: "Total Orders", value: orders.length, color: "#ef4444" },
-    { icon: HiOutlineCheckCircle, label: "Completed", value: orders.filter((o) => o.status === "completed" || o.payment_status === "paid").length, color: "#22c55e" },
+    { icon: HiOutlineCheckCircle, label: "Completed", value: orders.filter((o) => o.status === "completed" || (o.payment_status||"").toLowerCase() === "paid").length, color: "#22c55e" },
     { icon: HiOutlineCurrencyRupee, label: "Total Spent", value: `₹${orders.reduce((s, o) => s + (o.amount || o.price || 0), 0)}`, color: "#f59e0b" },
-    { icon: HiOutlineArrowDownTray, label: "Downloads", value: orders.filter((o) => o.payment_status === "paid").length, color: "#8b5cf6" },
+    { icon: HiOutlineArrowDownTray, label: "Downloads", value: orders.filter((o) => (o.payment_status||"").toLowerCase() === "paid").length, color: "#8b5cf6" },
   ];
 
   const quickLinks = [
@@ -89,8 +90,8 @@ function DashboardContent() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-white">₹{order.amount || order.price || 0}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${order.payment_status === "paid" ? "text-green-400 bg-green-500/10" : "text-amber-400 bg-amber-500/10"}`}>
-                    {order.payment_status || "pending"}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${((order.payment_status||"").toLowerCase() === "paid") ? "text-green-400 bg-green-500/10" : "text-amber-400 bg-amber-500/10"}`}>
+                    {(order.payment_status || "pending").toLowerCase()}
                   </span>
                 </div>
               </Link>

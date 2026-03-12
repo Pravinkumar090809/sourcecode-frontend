@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { HiOutlineCodeBracket } from "react-icons/hi2";
-import { FiGithub, FiTwitter, FiMail, FiInstagram, FiYoutube, FiFacebook, FiLinkedin, FiHeart } from "react-icons/fi";
+import { FiGithub, FiMail, FiInstagram, FiYoutube, FiLinkedin, FiHeart } from "react-icons/fi";
 
 export default function Footer() {
   const links = {
@@ -39,11 +39,9 @@ export default function Footer() {
             <div className="flex gap-3">
               {[
                 { Icon: FiGithub, href: "https://github.com/Pravinkumar0908/" },
-                { Icon: FiTwitter, href: "#" },
-                { Icon: FiMail, href: "mailto:hello@example.com" },
+                { Icon: FiMail, href: "mailto:edubee@proton.me" },
                 { Icon: FiInstagram, href: "https://www.instagram.com/pravinkumar_90/" },
                 { Icon: FiYoutube, href: "https://www.youtube.com/@codewithturn" },
-                { Icon: FiFacebook, href: "#" },
                 { Icon: FiLinkedin, href: "https://www.linkedin.com/in/pravin-kumar-verma-9084b3213/" },
               ].map((item, i) => (
                 <a

@@ -14,19 +14,25 @@ function ProductsContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token && user?.email) {
-      orderAPI.getByEmail(token, user.email).then((res) => {
-        if (res.success) setOrders((res.orders || res.data || []).filter((o) => o.payment_status === "paid"));
+    const userEmail = user?.email || user?.buyer_email;
+    if (token && userEmail) {
+      orderAPI.getByEmail(token, userEmail).then((res) => {
+        if (res.success) setOrders((res.orders || res.data || []).filter((o) => (o.payment_status||"").toLowerCase() === "paid"));
         setLoading(false);
       });
-    }
+    } else setLoading(false);
   }, [token, user]);
 
   const handleDownload = async (order) => {
-    const res = await orderAPI.download(token, order.id, user.email);
-    if (res.success && res.download_url) {
-      window.open(res.download_url, "_blank");
+    const res = await orderAPI.download(token, order.product_id);
+    if (res.success && (res.data?.download_url || res.download_url)) {
+      const url = res.data?.download_url || res.download_url;
+      const warning = res.data?.warning || res.warning;
+      window.open(url, "_blank");
       toast.success("Download started!");
+      if (warning) {
+        setTimeout(() => toast(warning, { icon: "⏳", duration: 6000, style: { background: "#1e1e2e", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" } }), 1000);
+      }
     } else toast.error(res.message || "Download failed");
   };
 

@@ -1,19 +1,33 @@
 "use client";
 import { useState } from "react";
+import Cookies from "js-cookie";
+import { adminAPI } from "@/lib/api";
 import { HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeSlash } from "react-icons/hi2";
 import toast from "react-hot-toast";
 
 export default function AdminChangePasswordPage() {
   const [form, setForm] = useState({ current: "", newPass: "", confirm: "" });
   const [show, setShow] = useState({ current: false, newPass: false, confirm: false });
+  const [saving, setSaving] = useState(false);
+  const key = Cookies.get("admin_api_key");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.current || !form.newPass || !form.confirm) return toast.error("Fill all fields");
     if (form.newPass.length < 6) return toast.error("Password must be at least 6 characters");
     if (form.newPass !== form.confirm) return toast.error("Passwords do not match");
-    toast.success("Password changed (demo)");
-    setForm({ current: "", newPass: "", confirm: "" });
+    setSaving(true);
+    const res = await adminAPI.changePassword(key, {
+      currentPassword: form.current,
+      newPassword: form.newPass,
+    });
+    setSaving(false);
+    if (res.success) {
+      toast.success("Password changed successfully");
+      setForm({ current: "", newPass: "", confirm: "" });
+    } else {
+      toast.error(res.message || "Failed to change password");
+    }
   };
 
   const PasswordInput = ({ label, field }) => (
@@ -29,13 +43,15 @@ export default function AdminChangePasswordPage() {
   );
 
   return (
-    <div className="max-w-lg mx-auto">
-      <div className="mb-8 animate-fadeIn">
-        <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2"><HiOutlineLockClosed className="text-red-400" /> Change Password</h1>
-        <p className="text-slate-500 text-sm">Update your admin password</p>
+    <div className="w-full max-w-lg mx-auto">
+      <div className="mb-6 sm:mb-8 animate-fadeIn">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 flex items-center gap-2">
+          <HiOutlineLockClosed className="text-red-400 flex-shrink-0" /> Change Password
+        </h1>
+        <p className="text-slate-500 text-xs sm:text-sm">Update your admin password</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="glass rounded-2xl p-6 space-y-4 animate-fadeIn">
+      <form onSubmit={handleSubmit} className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-3 sm:space-y-4 animate-fadeIn">
         <PasswordInput label="Current Password" field="current" />
         <PasswordInput label="New Password" field="newPass" />
         <PasswordInput label="Confirm New Password" field="confirm" />
@@ -55,7 +71,7 @@ export default function AdminChangePasswordPage() {
           </ul>
         </div>
 
-        <button type="submit" className="btn-primary w-full py-3 rounded-xl text-sm font-semibold">Change Password</button>
+        <button type="submit" disabled={saving} className="btn-primary w-full py-3 rounded-xl text-sm font-semibold disabled:opacity-50">{saving ? "Changing..." : "Change Password"}</button>
       </form>
     </div>
   );

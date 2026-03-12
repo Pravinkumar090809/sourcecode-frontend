@@ -3,22 +3,36 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/lib/store";
+import { supportAPI } from "@/lib/api";
 import { AuthGuard } from "@/components/AuthGuard";
 import { HiOutlineArrowLeft } from "react-icons/hi2";
 
 function Content() {
-  const [form, setForm] = useState({ subject: "", category: "general", message: "" });
+  const [form, setForm] = useState({ subject: "", message: "" });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { token } = useAuthStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.subject || !form.message) return toast.error("Please fill all fields");
+    if (!token) return toast.error("You must be logged in to submit a ticket");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    toast.success("Support ticket created!");
-    router.push("/dashboard/support");
+    try {
+      const res = await supportAPI.createTicket(token, form);
+      if (res.success) {
+        toast.success("Support ticket created!");
+        router.push("/dashboard/support");
+      } else {
+        toast.error(res.message || "Failed to create ticket");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,15 +43,6 @@ function Content() {
       <div className="glass rounded-2xl p-6 animate-fadeIn">
         <h1 className="text-xl font-bold text-white mb-6">Create Support Ticket</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-slate-400 mb-1.5 block">Category</label>
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="input-glass w-full">
-              <option value="general">General</option>
-              <option value="technical">Technical Issue</option>
-              <option value="billing">Billing</option>
-              <option value="refund">Refund Request</option>
-            </select>
-          </div>
           <div>
             <label className="text-sm text-slate-400 mb-1.5 block">Subject</label>
             <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="input-glass w-full" placeholder="Brief description" />

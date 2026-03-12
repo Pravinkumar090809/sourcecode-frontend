@@ -1,18 +1,27 @@
 "use client";
-import { useState } from "react";
-import { HiOutlineClipboardDocumentList, HiOutlineUser, HiOutlineShieldCheck, HiOutlineCog6Tooth } from "react-icons/hi2";
+import { useState, useEffect, useCallback } from "react";
+import Cookies from "js-cookie";
+import { adminAPI } from "@/lib/api";
+import { HiOutlineClipboardDocumentCheck, HiOutlineUser, HiOutlineShieldCheck, HiOutlineCog6Tooth, HiOutlineClipboardDocumentList, HiOutlineArrowPath } from "react-icons/hi2";
 
 export default function AdminActivityLogsPage() {
-  const [logs] = useState([
-    { id: 1, action: "Product Created", user: "Admin", details: "Created 'React Dashboard Pro'", type: "product", time: "2 min ago" },
-    { id: 2, action: "Order Completed", user: "System", details: "Order #ORD-1015 marked as paid", type: "order", time: "15 min ago" },
-    { id: 3, action: "User Registered", user: "System", details: "New user ravi@test.com registered", type: "user", time: "1 hour ago" },
-    { id: 4, action: "Product Updated", user: "Admin", details: "Updated pricing for 'Node.js API Kit'", type: "product", time: "2 hours ago" },
-    { id: 5, action: "Admin Login", user: "Admin", details: "Admin logged in from 103.21.xx.xx", type: "auth", time: "3 hours ago" },
-    { id: 6, action: "File Uploaded", user: "Admin", details: "Uploaded flutter-ecom-v3.zip", type: "file", time: "5 hours ago" },
-    { id: 7, action: "Refund Processed", user: "Admin", details: "Refund ₹499 for order #ORD-1008", type: "payment", time: "1 day ago" },
-    { id: 8, action: "Settings Updated", user: "Admin", details: "Updated platform settings", type: "settings", time: "2 days ago" },
-  ]);
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const key = Cookies.get("admin_api_key");
+
+  const fetchLogs = useCallback(async () => {
+    if (!key) return;
+    try {
+      const res = await adminAPI.getActivityLogs(key, 50);
+      if (res.success) setLogs(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch activity logs:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [key]);
+
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   const typeIcons = {
     product: <HiOutlineCog6Tooth className="text-blue-400" />,
@@ -25,31 +34,59 @@ export default function AdminActivityLogsPage() {
   };
 
   return (
-    <div>
-      <div className="mb-8 animate-fadeIn">
-        <h1 className="text-2xl font-bold text-white mb-1 flex items-center gap-2"><HiOutlineClipboardDocumentList className="text-red-400" /> Activity Logs</h1>
-        <p className="text-slate-500 text-sm">Platform activity and audit trail</p>
+    <div className="w-full max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8 animate-fadeIn">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 flex items-center gap-2">
+            <HiOutlineClipboardDocumentCheck className="text-red-400 flex-shrink-0" /> Activity Logs
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm">Platform activity and audit trail ({logs.length} entries)</p>
+        </div>
+        <button onClick={() => { setLoading(true); fetchLogs(); }} className="btn-secondary text-xs sm:text-sm w-fit">
+          <HiOutlineArrowPath className={loading ? "animate-spin" : ""} /> Refresh
+        </button>
       </div>
 
-      <div className="glass rounded-2xl p-6 animate-fadeIn">
-        <div className="space-y-4">
-          {logs.map((log) => (
-            <div key={log.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 shrink-0 mt-0.5">
-                {typeIcons[log.type]}
+      <div className="glass rounded-xl sm:rounded-2xl p-3 sm:p-6 animate-fadeIn">
+        {loading ? (
+          <div className="p-12 text-center"><span className="w-8 h-8 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin inline-block" /></div>
+        ) : logs.length === 0 ? (
+          <div className="p-12 text-center"><HiOutlineClipboardDocumentCheck className="text-4xl text-slate-600 mx-auto mb-3" /><h3 className="text-base font-semibold text-white mb-2">No Activity Yet</h3><p className="text-slate-500 text-sm">Activity logs will appear here as actions are performed</p></div>
+        ) : (
+        <div className="space-y-2 sm:space-y-3">
+          {logs.map((log) => {
+            const timeAgo = getTimeAgo(new Date(log.created_at));
+            return (
+            <div key={log.id} className="flex items-start gap-3 sm:gap-4 p-2.5 sm:p-3 rounded-xl hover:bg-white/[0.02] transition-colors">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center bg-white/5 shrink-0 mt-0.5">
+                {typeIcons[log.type] || typeIcons.general}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white">{log.action}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{log.details}</p>
+                <p className="text-xs text-slate-500 mt-0.5 truncate">{log.details}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-xs text-slate-600">{log.time}</p>
-                <p className="text-[10px] text-slate-700 mt-0.5">{log.user}</p>
+                <p className="text-[10px] sm:text-xs text-slate-600">{timeAgo}</p>
+                <p className="text-[10px] text-slate-700 mt-0.5">{log.actor}</p>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
+        )}
       </div>
     </div>
   );
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return "Just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString();
 }

@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { orderAPI } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { AuthGuard } from "@/components/AuthGuard";
-import { HiOutlineArrowLeft, HiOutlineArrowDownTray, HiOutlineCheckCircle, HiOutlineClock } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineArrowDownTray, HiOutlineCheckCircle, HiOutlineClock, HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import { FiPackage } from "react-icons/fi";
 
 function OrderDetailContent() {
@@ -23,17 +23,25 @@ function OrderDetailContent() {
   }, [id]);
 
   const handleDownload = async () => {
-    const res = await orderAPI.download(token, id, user.email);
-    if (res.success && res.download_url) {
-      window.open(res.download_url, "_blank");
+    const res = await orderAPI.download(token, order?.product_id);
+    if (res.success && (res.data?.download_url || res.download_url)) {
+      const url = res.data?.download_url || res.download_url;
+      const warning = res.data?.warning || res.warning;
+      window.open(url, "_blank");
       toast.success("Download started!");
+      if (warning) {
+        setTimeout(() => toast(warning, { icon: "⏳", duration: 6000, style: { background: "#1e1e2e", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" } }), 1000);
+      }
     } else toast.error(res.message || "Download failed");
   };
 
   if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><div className="glass rounded-2xl h-64 animate-pulse" /></div>;
   if (!order) return <div className="max-w-4xl mx-auto px-4 py-20 text-center text-slate-500">Order not found</div>;
 
-  const paid = order.payment_status === "paid";
+  const paid = (order.payment_status||"").toLowerCase() === "paid";
+
+  // use buyer_email fallback since backend names it that way
+  const emailValue = order?.buyer_email || order?.email || "";
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -59,8 +67,10 @@ function OrderDetailContent() {
           {[
             { label: "Amount", value: `₹${order.amount || order.price || 0}` },
             { label: "Date", value: new Date(order.created_at).toLocaleDateString() },
-            { label: "Email", value: order.email },
-            { label: "Payment Status", value: order.payment_status || "pending" },
+            { label: "Email", value: emailValue },
+            { label: "Payment Status", value: (order.payment_status || "pending").toLowerCase() },
+            ...(order.coupon_code ? [{ label: "Coupon", value: order.coupon_code }] : []),
+            ...(order.discount_amount ? [{ label: "Discount", value: `-₹${order.discount_amount}` }] : []),
           ].map((item, i) => (
             <div key={i} className="p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
               <p className="text-xs text-slate-500 mb-0.5">{item.label}</p>
@@ -69,9 +79,17 @@ function OrderDetailContent() {
           ))}
         </div>
         {paid && (
-          <button onClick={handleDownload} className="btn-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">
-            <HiOutlineArrowDownTray /> Download Source Code
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={handleDownload} className="btn-primary px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">
+              <HiOutlineArrowDownTray /> Download Source Code
+            </button>
+            <button
+              onClick={() => window.open(`/dashboard/invoices/${order.id}`, "_blank")}
+              className="btn-secondary px-6 py-3 rounded-xl text-sm font-semibold flex items-center gap-2"
+            >
+              <HiOutlineClipboardDocumentList /> View Invoice
+            </button>
+          </div>
         )}
       </div>
     </div>
